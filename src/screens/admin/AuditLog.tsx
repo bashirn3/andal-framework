@@ -2,6 +2,7 @@ import { Shell } from '../../components/Shell';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { I } from '../../components/icons';
+import { useToast } from '../../toast/Toast';
 import type { Theme } from '../../types';
 
 // [timestamp, actor, action, target, module, details]
@@ -36,7 +37,9 @@ const colorFor = (a: string): string => {
 };
 
 // ===== 17. Audit Log =====
-export const AuditLogScreen = ({ theme = 'light' }: { theme?: Theme }) => (
+export const AuditLogScreen = ({ theme = 'light' }: { theme?: Theme }) => {
+  const toast = useToast();
+  return (
   <Shell theme={theme}>
     <Sidebar active="admin-audit" roleId="admin" />
     <div className="a-main">
@@ -48,7 +51,7 @@ export const AuditLogScreen = ({ theme = 'light' }: { theme?: Theme }) => (
           <p className="a-ph__sub">Append-only record of platform events. Retained for 365 days.</p>
         </div>
         <div className="a-ph__actions">
-          <button className="a-btn">
+          <button className="a-btn" onClick={() => toast('ok', 'Export started', 'audit-2026-05-30.json · 18 events')}>
             {I.download}
             <span>Export JSON</span>
           </button>
@@ -121,4 +124,5 @@ export const AuditLogScreen = ({ theme = 'light' }: { theme?: Theme }) => (
       </div>
     </div>
   </Shell>
-);
+  );
+};

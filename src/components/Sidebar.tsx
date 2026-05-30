@@ -1,8 +1,19 @@
+import { useState, type KeyboardEvent } from 'react';
 import { I } from './icons';
 import { Lockup } from './Shell';
 import { useNav } from '../nav/NavContext';
+import { useToast } from '../toast/Toast';
 import { CONVOS, MODULES, ROLES, STORAGE } from '../data/roles';
 import type { Conversation, ModuleDef, ModuleId, RoleId, StorageUsage } from '../types';
+
+// Enter/Space activates a non-button element used as a control.
+const onActivate = (fn?: () => void) => (e: KeyboardEvent) => {
+  if (!fn) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    fn();
+  }
+};
 
 // ===== Module accordion item =====
 interface ModuleGroupProps {
@@ -34,8 +45,11 @@ const ModuleGroup = ({
       <div
         className="a-mod__head"
         onClick={onToggle}
+        onKeyDown={onActivate(onToggle)}
         role={onToggle ? 'button' : undefined}
-        title="Click to expand · use New conversation or history to open"
+        tabIndex={onToggle ? 0 : undefined}
+        aria-expanded={expanded}
+        title="Expand · open via New conversation or history"
       >
         <span className="a-nav-ico">{m.icon}</span>
         <span className="a-mod__label">{m.label}</span>
@@ -44,7 +58,13 @@ const ModuleGroup = ({
       </div>
       {expanded && (
         <div className="a-mod__body">
-          <div className="a-mod__new" onClick={onNew} role={onNew ? 'button' : undefined}>
+          <div
+            className="a-mod__new"
+            onClick={onNew}
+            onKeyDown={onActivate(onNew)}
+            role={onNew ? 'button' : undefined}
+            tabIndex={onNew ? 0 : undefined}
+          >
             <span className="a-mod__new-ico">{I.plus}</span>
             <span>New conversation</span>
           </div>
@@ -54,7 +74,9 @@ const ModuleGroup = ({
               key={i}
               className={`a-mod__conv ${c.active || i === activeConvIndex ? 'active' : ''}`}
               onClick={onConv ? () => onConv(i) : undefined}
+              onKeyDown={onActivate(onConv ? () => onConv(i) : undefined)}
               role={onConv ? 'button' : undefined}
+              tabIndex={onConv ? 0 : undefined}
             >
               <span className="a-mod__conv-title">{c.title}</span>
               <span className="a-mod__conv-time mono">{c.time}</span>
@@ -84,7 +106,19 @@ export const Sidebar = ({
 }: SidebarProps) => {
   const r = ROLES[roleId] || ROLES.rd;
   const nav = useNav();
+  const toast = useToast();
+  const [menuOpen, setMenuOpen] = useState(false);
   const visible = MODULES.filter((m) => r.modules.includes(m.id));
+
+  const goAccount = (to: string) => {
+    setMenuOpen(false);
+    nav?.navigate(to);
+  };
+  const signOut = () => {
+    setMenuOpen(false);
+    nav?.navigate('/login');
+    toast('ok', 'Signed out', 'Your session has ended.');
+  };
   const storage = storageOverride || STORAGE[roleId];
   const pct = Math.round((storage.used / storage.total) * 100);
   const barClass = pct >= 95 ? 'danger' : pct >= 80 ? 'warn' : '';
@@ -200,13 +234,40 @@ export const Sidebar = ({
           </div>
         </div>
 
-        <div className="a-user">
-          <div className="a-avatar mono">{r.initials}</div>
-          <div className="col" style={{ lineHeight: 1.2, minWidth: 0, flex: 1 }}>
-            <div className="a-user__name">{r.name}</div>
-            <div className="a-user__role mono">{r.role}</div>
-          </div>
-          <div className="a-user__chev">{I.chev}</div>
+        <div className="a-usermenu">
+          {menuOpen && (
+            <>
+              <div className="a-attach__back" onClick={() => setMenuOpen(false)} />
+              <div className="a-usermenu__pop" role="menu">
+                <button className="a-usermenu__item" role="menuitem" onClick={() => goAccount('/settings')}>
+                  <span className="a-nav-ico">{I.cog}</span>
+                  <span>Account &amp; settings</span>
+                </button>
+                <button className="a-usermenu__item" role="menuitem" onClick={() => goAccount('/files')}>
+                  <span className="a-nav-ico">{I.folder}</span>
+                  <span>Files &amp; storage</span>
+                </button>
+                <div className="a-usermenu__sep" />
+                <button className="a-usermenu__item danger" role="menuitem" onClick={signOut}>
+                  <span className="a-nav-ico">{I.signout}</span>
+                  <span>Sign out</span>
+                </button>
+              </div>
+            </>
+          )}
+          <button
+            className="a-user"
+            onClick={nav ? () => setMenuOpen((o) => !o) : undefined}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+          >
+            <div className="a-avatar mono">{r.initials}</div>
+            <div className="col" style={{ lineHeight: 1.2, minWidth: 0, flex: 1, alignItems: 'flex-start' }}>
+              <div className="a-user__name">{r.name}</div>
+              <div className="a-user__role mono">{r.role}</div>
+            </div>
+            <div className="a-user__chev">{I.chev}</div>
+          </button>
         </div>
       </div>
     </aside>

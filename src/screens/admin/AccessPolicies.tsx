@@ -2,6 +2,7 @@ import { Shell } from '../../components/Shell';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { I } from '../../components/icons';
+import { useToast } from '../../toast/Toast';
 import type { Theme } from '../../types';
 
 // [label, roleSlug, [knowledge, coding, dialect, forensics]]
@@ -14,7 +15,9 @@ const DEPTS: Array<[string, string, number[]]> = [
 ];
 
 // ===== 16. Access Policies =====
-export const AccessPoliciesScreen = ({ theme = 'light' }: { theme?: Theme }) => (
+export const AccessPoliciesScreen = ({ theme = 'light' }: { theme?: Theme }) => {
+  const toast = useToast();
+  return (
   <Shell theme={theme}>
     <Sidebar active="admin-policy" roleId="admin" />
     <div className="a-main">
@@ -29,8 +32,15 @@ export const AccessPoliciesScreen = ({ theme = 'light' }: { theme?: Theme }) => 
           </p>
         </div>
         <div className="a-ph__actions">
-          <button className="a-btn">Discard</button>
-          <button className="a-btn primary">Save changes</button>
+          <button className="a-btn" onClick={() => toast('info', 'Changes discarded')}>
+            Discard
+          </button>
+          <button
+            className="a-btn primary"
+            onClick={() => toast('ok', 'Access policies saved', 'Applies on each user’s next session refresh.')}
+          >
+            Save changes
+          </button>
         </div>
       </div>
 
@@ -125,4 +135,5 @@ export const AccessPoliciesScreen = ({ theme = 'light' }: { theme?: Theme }) => 
       </div>
     </div>
   </Shell>
-);
+  );
+};

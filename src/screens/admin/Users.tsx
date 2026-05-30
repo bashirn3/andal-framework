@@ -3,6 +3,7 @@ import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { I } from '../../components/icons';
 import { useNav } from '../../nav/NavContext';
+import { useToast } from '../../toast/Toast';
 import type { Theme } from '../../types';
 
 // [name, email, staffId, dept, status, access, storage, lastActive]
@@ -23,6 +24,7 @@ const USERS: UserRow[] = [
 // ===== 13. Admin Users =====
 export const AdminUsersScreen = ({ theme = 'light' }: { theme?: Theme }) => {
   const nav = useNav();
+  const toast = useToast();
 
   return (
     <Shell theme={theme}>
@@ -36,7 +38,7 @@ export const AdminUsersScreen = ({ theme = 'light' }: { theme?: Theme }) => {
             <p className="a-ph__sub">Approve pending accounts, manage access, and disable accounts.</p>
           </div>
           <div className="a-ph__actions">
-            <button className="a-btn">
+            <button className="a-btn" onClick={() => toast('ok', 'Export started', 'users-2026-05-30.csv · 31 rows')}>
               {I.download}
               <span>Export CSV</span>
             </button>

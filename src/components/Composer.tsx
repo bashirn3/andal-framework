@@ -1,5 +1,6 @@
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { I } from './icons';
+import { useToast } from '../toast/Toast';
 
 // ===== Attach popup =====
 interface AttachOption {
@@ -7,18 +8,19 @@ interface AttachOption {
   label: string;
   sub: string;
   icon: ReactNode;
+  sample: Attachment;
 }
 
 const ATTACH_OPTIONS: AttachOption[] = [
-  { id: 'device', label: 'Upload from device', sub: 'Browse files on this computer', icon: I.upload },
-  { id: 'documents', label: 'Documents', sub: 'PDF, DOCX, TXT, Markdown', icon: I.file },
-  { id: 'code', label: 'Code files', sub: '.py, .ts, .json, .yaml, .sql and more', icon: I.code },
-  { id: 'media', label: 'Audio or video', sub: '.wav, .mp3, .m4a, .mp4, .mov', icon: I.voice },
-  { id: 'evidence', label: 'Evidence bundle', sub: '.log, .csv, .zip, .tar.gz, .eml', icon: I.folder },
-  { id: 'files', label: 'From Files & storage', sub: "Pick something you've already uploaded", icon: I.folder },
+  { id: 'device', label: 'Upload from device', sub: 'Browse files on this computer', icon: I.upload, sample: { name: 'document.pdf', size: '480 KB' } },
+  { id: 'documents', label: 'Documents', sub: 'PDF, DOCX, TXT, Markdown', icon: I.file, sample: { name: 'policy-brief.pdf', size: '1.1 MB' } },
+  { id: 'code', label: 'Code files', sub: '.py, .ts, .json, .yaml, .sql and more', icon: I.code, sample: { name: 'service.py', size: '2.3 KB' } },
+  { id: 'media', label: 'Audio or video', sub: '.wav, .mp3, .m4a, .mp4, .mov', icon: I.voice, sample: { name: 'interview.m4a', size: '18 MB' } },
+  { id: 'evidence', label: 'Evidence bundle', sub: '.log, .csv, .zip, .tar.gz, .eml', icon: I.folder, sample: { name: 'gateway-01.log', size: '3.4 MB' } },
+  { id: 'files', label: 'From Files & storage', sub: "Pick something you've already uploaded", icon: I.folder, sample: { name: 'NCCC-procurement-2024.pdf', size: '1.2 MB' } },
 ];
 
-const AttachPopup = ({ onClose }: { onClose: () => void }) => (
+const AttachPopup = ({ onClose, onPick }: { onClose: () => void; onPick: (opt: AttachOption) => void }) => (
   <>
     <div className="a-attach__back" onClick={onClose} />
     <div className="a-attach__pop" role="menu">
@@ -27,7 +29,7 @@ const AttachPopup = ({ onClose }: { onClose: () => void }) => (
       </div>
       <div className="a-attach__list">
         {ATTACH_OPTIONS.map((opt) => (
-          <button key={opt.id} className="a-attach__item" onClick={onClose} role="menuitem">
+          <button key={opt.id} className="a-attach__item" onClick={() => onPick(opt)} role="menuitem">
             <span className="a-attach__ico">{opt.icon}</span>
             <div
               className="col"
@@ -55,8 +57,8 @@ interface ComposerProps {
   placeholder?: string;
   attached?: Attachment[];
   hint?: string;
-  /** Called with the typed text when the user sends. Omit for a display-only composer. */
-  onSend?: (text: string) => void;
+  /** Called with the typed text (and any attachments) when the user sends. */
+  onSend?: (text: string, attachments?: Attachment[]) => void;
   autoFocus?: boolean;
 }
 
@@ -67,9 +69,13 @@ export const Composer = ({
   onSend,
   autoFocus = false,
 }: ComposerProps) => {
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
+  const [added, setAdded] = useState<Attachment[]>([]);
   const taRef = useRef<HTMLTextAreaElement>(null);
+
+  const chips = [...attached, ...added];
 
   const grow = () => {
     const ta = taRef.current;
@@ -81,8 +87,9 @@ export const Composer = ({
   const send = () => {
     const t = text.trim();
     if (!t || !onSend) return;
-    onSend(t);
+    onSend(t, added);
     setText('');
+    setAdded([]);
     requestAnimationFrame(() => {
       if (taRef.current) taRef.current.style.height = 'auto';
     });
@@ -97,16 +104,28 @@ export const Composer = ({
 
   return (
     <div className="a-composer">
-      {attached.length > 0 && (
+      {chips.length > 0 && (
         <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-          {attached.map((a, i) => (
-            <span key={i} className="a-chip">
-              <span className="a-chip__icon">{I.file}</span>
-              {a.name}
-              {a.size && <span className="ext">· {a.size}</span>}
-              <span className="x">{I.x}</span>
-            </span>
-          ))}
+          {chips.map((a, i) => {
+            const removable = i >= attached.length;
+            return (
+              <span key={i} className="a-chip">
+                <span className="a-chip__icon">{I.file}</span>
+                {a.name}
+                {a.size && <span className="ext">· {a.size}</span>}
+                {removable && (
+                  <span
+                    className="x"
+                    role="button"
+                    title="Remove"
+                    onClick={() => setAdded((prev) => prev.filter((x) => x !== a))}
+                  >
+                    {I.x}
+                  </span>
+                )}
+              </span>
+            );
+          })}
         </div>
       )}
       <textarea
@@ -128,7 +147,16 @@ export const Composer = ({
             {I.attach}
             <span>Attach</span>
           </button>
-          {open && <AttachPopup onClose={() => setOpen(false)} />}
+          {open && (
+            <AttachPopup
+              onClose={() => setOpen(false)}
+              onPick={(opt) => {
+                setOpen(false);
+                setAdded((prev) => [...prev, opt.sample]);
+                toast('ok', 'Attached', `${opt.sample.name} · ${opt.sample.size}`);
+              }}
+            />
+          )}
         </div>
         <span className="a-composer__hint">{hint}</span>
         <button

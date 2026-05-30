@@ -5,26 +5,78 @@ import { NavContext, type ModalId, type NavValue, type Route } from './nav/NavCo
 import { Stage } from './nav/Stage';
 import { Router } from './Router';
 import { TweaksPanel } from './tweaks/TweaksPanel';
-import {
-  ApproveUserOverlay,
-  ClearSessionOverlay,
-  DeleteFileOverlay,
-  DisableUserOverlay,
-} from './components/modals/Modals';
+import { ToastProvider } from './toast/Toast';
+import { ApproveUserOverlay, ClearSessionOverlay, DisableUserOverlay } from './components/modals/Modals';
 import type { Accent, Density, ModuleId, RoleId, Theme } from './types';
 
 const WORKSPACE_MODULES: ModuleId[] = ['knowledge', 'coding', 'dialect', 'forensics'];
+const ACCENTS: Accent[] = ['verdant', 'ink', 'dusk', 'sage'];
+const DENSITIES: Density[] = ['compact', 'comfortable', 'spacious'];
+
+const lsGet = (k: string): string | null => {
+  try {
+    return localStorage.getItem(k);
+  } catch {
+    return null;
+  }
+};
+const lsSet = (k: string, v: string): void => {
+  try {
+    localStorage.setItem(k, v);
+  } catch {
+    /* ignore (private mode, etc.) */
+  }
+};
+
+const TITLES: Array<[string, string]> = [
+  ['/login', 'Sign in'],
+  ['/signup', 'Create account'],
+  ['/pending', 'Pending approval'],
+  ['/onboarding', 'Welcome'],
+  ['/welcome', 'Welcome'],
+  ['/knowledge', 'Knowledge'],
+  ['/coding', 'Coding'],
+  ['/dialect', 'Dialect'],
+  ['/forensics', 'Forensics'],
+  ['/files', 'Files & storage'],
+  ['/settings', 'Settings'],
+  ['/states', 'System states'],
+  ['/admin/users', 'Admin · Users'],
+  ['/admin/policy', 'Admin · Access policies'],
+  ['/admin/audit', 'Admin · Audit log'],
+];
+const titleFor = (route: string) =>
+  'Andal · ' + (TITLES.find(([p]) => route === p || route.startsWith(p + '/'))?.[1] ?? 'Prototype');
 
 export default function App() {
-  const [role, setRole] = useState<RoleId>('rd');
-  const [accent, setAccent] = useState<Accent>('verdant');
-  const [density, setDensity] = useState<Density>('comfortable');
-  const [route, setRoute] = useState<Route>('/login');
+  const [role, setRole] = useState<RoleId>(() => {
+    const v = lsGet('andal.role');
+    return v && v in ROLES ? (v as RoleId) : 'rd';
+  });
+  const [accent, setAccent] = useState<Accent>(() => {
+    const v = lsGet('andal.accent') as Accent | null;
+    return v && ACCENTS.includes(v) ? v : 'verdant';
+  });
+  const [density, setDensity] = useState<Density>(() => {
+    const v = lsGet('andal.density') as Density | null;
+    return v && DENSITIES.includes(v) ? v : 'comfortable';
+  });
+  const [theme, setTheme] = useState<Theme>(() => {
+    const v = lsGet('andal.theme');
+    if (v === 'light' || v === 'dark') return v;
+    return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+  });
+  const [route, setRoute] = useState<Route>(() => window.location.hash.replace(/^#/, '') || '/login');
   const [expanded, setExpanded] = useState<Set<ModuleId>>(new Set(['knowledge']));
-  const [theme, setTheme] = useState<Theme>('light');
   const [modal, setModal] = useState<ModalId>(null);
 
   const r = ROLES[role];
+
+  // Persist preferences.
+  useEffect(() => lsSet('andal.role', role), [role]);
+  useEffect(() => lsSet('andal.accent', accent), [accent]);
+  useEffect(() => lsSet('andal.density', density), [density]);
+  useEffect(() => lsSet('andal.theme', theme), [theme]);
 
   // Apply accent/density to the document root so the CSS overrides resolve.
   useEffect(() => {
@@ -33,6 +85,28 @@ export default function App() {
     document.body.setAttribute('data-andal-accent', accent);
     document.body.setAttribute('data-andal-density', density);
   }, [accent, density]);
+
+  // Tab title follows the route.
+  useEffect(() => {
+    document.title = titleFor(route);
+  }, [route]);
+
+  // Keep the URL hash in sync (enables refresh, back/forward, deep-linking).
+  useEffect(() => {
+    if (window.location.hash !== '#' + route) window.history.pushState(null, '', '#' + route);
+  }, [route]);
+  useEffect(() => {
+    const sync = () => setRoute((prev) => {
+      const h = window.location.hash.replace(/^#/, '') || '/login';
+      return prev === h ? prev : h;
+    });
+    window.addEventListener('popstate', sync);
+    window.addEventListener('hashchange', sync);
+    return () => {
+      window.removeEventListener('popstate', sync);
+      window.removeEventListener('hashchange', sync);
+    };
+  }, []);
 
   // When the role changes, bounce away from now-forbidden routes and reset
   // modal/expanded state so they match the new identity.
@@ -80,8 +154,6 @@ export default function App() {
   const toggleTheme = useCallback(() => {
     const flip = () => setTheme((p) => (p === 'light' ? 'dark' : 'light'));
     // Cross-fade the whole UI via the View Transitions API where supported.
-    // flushSync forces the DOM update inside the callback so the transition
-    // captures the new theme correctly.
     const doc = document as Document & { startViewTransition?: (cb: () => void) => void };
     if (doc.startViewTransition) doc.startViewTransition(() => flushSync(flip));
     else flip();
@@ -102,36 +174,36 @@ export default function App() {
   };
 
   return (
-    <NavContext.Provider value={ctx}>
-      <Stage>
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <div key={route} className="a-route" style={{ width: '100%', height: '100%' }}>
-            <Router route={route} role={role} theme={theme} />
-          </div>
-          {/* Modals live in their own themed scope so the CSS variables
-              (--bg-elev, --border, text colors) resolve. */}
-          {modal && (
-            <div className="andal andal--overlay" data-theme={theme}>
-              {modal === 'clear-session' && <ClearSessionOverlay />}
-              {modal === 'delete-file' && <DeleteFileOverlay />}
-              {modal === 'approve-user' && <ApproveUserOverlay />}
-              {modal === 'disable-user' && <DisableUserOverlay />}
+    <ToastProvider>
+      <NavContext.Provider value={ctx}>
+        <Stage>
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <div key={route} className="a-route" style={{ width: '100%', height: '100%' }}>
+              <Router route={route} role={role} theme={theme} />
             </div>
-          )}
-        </div>
-      </Stage>
+            {/* Modals live in their own themed scope so the CSS variables resolve. */}
+            {modal && (
+              <div className="andal andal--overlay" data-theme={theme}>
+                {modal === 'clear-session' && <ClearSessionOverlay />}
+                {modal === 'approve-user' && <ApproveUserOverlay />}
+                {modal === 'disable-user' && <DisableUserOverlay />}
+              </div>
+            )}
+          </div>
+        </Stage>
 
-      <TweaksPanel
-        role={role}
-        accent={accent}
-        density={density}
-        route={route}
-        isAdmin={r.admin}
-        onRole={setRole}
-        onAccent={setAccent}
-        onDensity={setDensity}
-        onJump={navigate}
-      />
-    </NavContext.Provider>
+        <TweaksPanel
+          role={role}
+          accent={accent}
+          density={density}
+          route={route}
+          isAdmin={r.admin}
+          onRole={setRole}
+          onAccent={setAccent}
+          onDensity={setDensity}
+          onJump={navigate}
+        />
+      </NavContext.Provider>
+    </ToastProvider>
   );
 }

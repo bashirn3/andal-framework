@@ -3,6 +3,10 @@ import { Shell } from '../../components/Shell';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { I } from '../../components/icons';
+import { useNav } from '../../nav/NavContext';
+import { useToast } from '../../toast/Toast';
+import { useJob } from '../../components/useJob';
+import { JobCard } from '../../components/JobCard';
 import { ROLES } from '../../data/roles';
 import type { RoleId, Theme } from '../../types';
 
@@ -18,7 +22,17 @@ export const ForensicsScreen = ({
 }) => {
   const r = ROLES[roleId] || ROLES.forensics;
   const name = firstName || r.name.split(' ')[0];
+  const nav = useNav();
+  const toast = useToast();
+  const job = useJob();
   const [analysis, setAnalysis] = useState('Log analysis');
+
+  const startJob = () => {
+    job.start('incident-bundle-NTP.zip', () =>
+      toast('ok', 'Analysis complete', 'incident-bundle-NTP.zip · 7 findings'),
+    );
+    toast('info', 'Job queued', `incident-bundle-NTP.zip · ${analysis}`);
+  };
 
   return (
     <Shell theme={theme}>
@@ -39,16 +53,36 @@ export const ForensicsScreen = ({
             </div>
 
             <div className="row" style={{ gap: 18, alignItems: 'flex-start' }}>
-              <div className="a-dz" style={{ flex: 1 }}>
-                <div style={{ color: 'var(--fg-3)' }}>{I.upload}</div>
-                <div>
-                  <strong>Drop evidence here</strong> or <span className="a-link">browse files</span>
+              <div className="col" style={{ flex: 1, gap: 14 }}>
+                <div className="a-dz">
+                  <div style={{ color: 'var(--fg-3)' }}>{I.upload}</div>
+                  <div>
+                    <strong>Drop evidence here</strong> or{' '}
+                    <span className="a-link" role="button" onClick={startJob}>
+                      browse files
+                    </span>
+                  </div>
+                  <div className="a-dz__sub">
+                    Findings, evidence references, and outstanding questions will be returned as a
+                    structured report.
+                  </div>
+                  <div className="a-dz__types mono">.LOG · .CSV · .JSON · .ZIP · .TAR · .GZ · .PDF · .TXT · .EML</div>
                 </div>
-                <div className="a-dz__sub">
-                  Findings, evidence references, and outstanding questions will be returned as a
-                  structured report.
-                </div>
-                <div className="a-dz__types mono">.LOG · .CSV · .JSON · .ZIP · .TAR · .GZ · .PDF · .TXT · .EML</div>
+                <button
+                  className="a-btn primary"
+                  style={{ alignSelf: 'flex-start' }}
+                  onClick={startJob}
+                  disabled={job.status === 'queued' || job.status === 'processing'}
+                >
+                  {I.bolt}
+                  <span>Run analysis</span>
+                </button>
+                <JobCard
+                  job={job}
+                  meta={`${job.fileName ?? ''} · ${analysis}`}
+                  onView={() => nav?.navigate('/forensics/chat')}
+                  onReset={job.reset}
+                />
               </div>
 
               <div className="col" style={{ width: 260, gap: 14 }}>

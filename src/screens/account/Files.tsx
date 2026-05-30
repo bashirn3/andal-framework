@@ -3,9 +3,18 @@ import { Shell } from '../../components/Shell';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { I } from '../../components/icons';
-import { useNav } from '../../nav/NavContext';
+import { useToast } from '../../toast/Toast';
 import { ROLES } from '../../data/roles';
 import type { ModuleId, RoleId, Theme } from '../../types';
+
+// Parse a human size like "82 MB" / "420 KB" / "3.2 KB" into megabytes.
+const parseMB = (s: string): number => {
+  const m = s.match(/([\d.]+)\s*(GB|MB|KB)/i);
+  if (!m) return 0;
+  const n = parseFloat(m[1]);
+  const u = m[2].toUpperCase();
+  return u === 'GB' ? n * 1024 : u === 'KB' ? n / 1024 : n;
+};
 
 type FilesVariant = 'default' | 'near' | 'full' | 'empty';
 
@@ -50,20 +59,33 @@ export const FilesScreen = ({
   roleId?: RoleId;
   variant?: FilesVariant;
 }) => {
-  const nav = useNav();
+  const toast = useToast();
   const r = ROLES[roleId] || ROLES.rd;
   const nearLimit = variant === 'near' || variant === 'full';
   const full = variant === 'full';
   const empty = variant === 'empty';
 
-  // Only files in workspaces the user can access.
-  const visibleFiles = ALL_FILES.filter(([, modId]) => r.modules.includes(modId));
+  const [deleted, setDeleted] = useState<Set<string>>(new Set());
+  const [pending, setPending] = useState<FileRow | null>(null);
+
+  // Only files in workspaces the user can access, minus deleted ones.
+  const allVisible = ALL_FILES.filter(([, modId]) => r.modules.includes(modId));
+  const visibleFiles = allVisible.filter(([f]) => !deleted.has(f));
   const fileCount = visibleFiles.length;
 
   const breakdown = r.modules.map((id) => [id, STORAGE_BY_MOD[id]] as const);
   const baseUsed = breakdown.reduce((s, [, v]) => s + v, 0);
-  const used = full ? Math.max(baseUsed, 498) : nearLimit ? Math.max(baseUsed, 462) : baseUsed;
+  const freed = allVisible.filter(([f]) => deleted.has(f)).reduce((s, row) => s + parseMB(row[4]), 0);
+  const rawUsed = full ? Math.max(baseUsed, 498) : nearLimit ? Math.max(baseUsed, 462) : baseUsed;
+  const used = Math.max(0, Math.round(rawUsed - freed));
   const pct = Math.round((used / 500) * 100);
+
+  const confirmDelete = () => {
+    if (!pending) return;
+    setDeleted((prev) => new Set(prev).add(pending[0]));
+    toast('ok', 'File deleted', `Freed ${pending[4]} · deleting files frees storage quota.`);
+    setPending(null);
+  };
 
   // Filter tabs — only modules the user has access to.
   const [filter, setFilter] = useState<'all' | ModuleId>('all');
@@ -93,11 +115,18 @@ export const FilesScreen = ({
             <p className="a-ph__sub">All uploads across your workspaces. Deleting files frees storage quota.</p>
           </div>
           <div className="a-ph__actions">
-            <button className="a-btn">
+            <button className="a-btn" onClick={() => toast('info', 'Search', 'Type to filter files (demo).')}>
               {I.search}
               <span>Search</span>
             </button>
-            <button className="a-btn primary">
+            <button
+              className="a-btn primary"
+              onClick={() =>
+                full
+                  ? toast('danger', 'Upload blocked', 'Storage full — free space first.')
+                  : toast('ok', 'Upload ready', 'Pick a file to add to this workspace.')
+              }
+            >
               {I.upload}
               <span>Upload</span>
             </button>
@@ -217,54 +246,109 @@ export const FilesScreen = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {shownFiles.map(([f, , m, t, sz, st, stat, time]) => (
-                    <tr key={f}>
-                      <td>
-                        <div className="row" style={{ gap: 10 }}>
-                          <span style={{ color: 'var(--fg-3)' }}>{I.file}</span>
-                          <span style={{ color: 'var(--fg)' }}>{f}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="mono" style={{ fontSize: 12, color: 'var(--fg-2)' }}>
-                          {m}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="a-pill mono">{t}</span>
-                      </td>
-                      <td className="mono" style={{ fontSize: 12 }}>
-                        {sz}
-                      </td>
-                      <td>
-                        <span className={`a-pill ${st} mono`}>
-                          <span className="dot" />
-                          {stat}
-                        </span>
-                      </td>
-                      <td className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
-                        {time}
-                      </td>
-                      <td>
-                        <div className="row" style={{ gap: 4, justifyContent: 'flex-end' }}>
-                          {stat === 'Result ready' && <button className="a-btn ghost sm">View</button>}
-                          <button
-                            className="a-btn ghost sm"
-                            style={{ color: 'var(--fg-3)' }}
-                            onClick={nav ? () => nav.openModal('delete-file') : undefined}
-                          >
-                            {I.trash}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {shownFiles.map((row) => {
+                    const [f, , m, t, sz, st, stat, time] = row;
+                    return (
+                      <tr key={f}>
+                        <td>
+                          <div className="row" style={{ gap: 10 }}>
+                            <span style={{ color: 'var(--fg-3)' }}>{I.file}</span>
+                            <span style={{ color: 'var(--fg)' }}>{f}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="mono" style={{ fontSize: 12, color: 'var(--fg-2)' }}>
+                            {m}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="a-pill mono">{t}</span>
+                        </td>
+                        <td className="mono" style={{ fontSize: 12 }}>
+                          {sz}
+                        </td>
+                        <td>
+                          <span className={`a-pill ${st} mono`}>
+                            <span className="dot" />
+                            {stat}
+                          </span>
+                        </td>
+                        <td className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+                          {time}
+                        </td>
+                        <td>
+                          <div className="row" style={{ gap: 4, justifyContent: 'flex-end' }}>
+                            {stat === 'Result ready' && (
+                              <button className="a-btn ghost sm" onClick={() => toast('info', 'Opening result', f)}>
+                                View
+                              </button>
+                            )}
+                            <button
+                              className="a-btn ghost sm"
+                              style={{ color: 'var(--fg-3)' }}
+                              title="Delete file"
+                              onClick={() => setPending(row)}
+                            >
+                              {I.trash}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
           </div>
         </div>
       </div>
+
+      {pending && (
+        <div className="a-modal-back" onClick={() => setPending(null)}>
+          <div className="a-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="a-modal__hd">
+              <div className="a-modal__title">
+                Delete{' '}
+                <span className="mono" style={{ fontSize: 14 }}>
+                  {pending[0]}
+                </span>
+                ?
+              </div>
+            </div>
+            <div className="a-modal__body">
+              <p style={{ margin: 0 }}>
+                This removes the file permanently
+                {pending[6].toLowerCase().includes('processing') ? ' and cancels its job' : ''}.
+              </p>
+              <div className="row" style={{ gap: 12, marginTop: 12, padding: '10px 12px', background: 'var(--bg-soft)', borderRadius: 8 }}>
+                <div className="col" style={{ flex: 1, gap: 2 }}>
+                  <span className="mono-meta">FREES</span>
+                  <span className="mono" style={{ fontSize: 16 }}>
+                    {pending[4]}
+                  </span>
+                </div>
+                <div className="col" style={{ flex: 1, gap: 2 }}>
+                  <span className="mono-meta">NEW QUOTA</span>
+                  <span className="mono" style={{ fontSize: 16 }}>
+                    {Math.max(0, Math.round(used - parseMB(pending[4])))} / 500 MB
+                  </span>
+                </div>
+              </div>
+              <p style={{ margin: '10px 0 0', fontSize: 12.5, color: 'var(--fg-3)' }}>
+                Deleting files frees storage quota.
+              </p>
+            </div>
+            <div className="a-modal__ft">
+              <button className="a-btn" onClick={() => setPending(null)}>
+                Cancel
+              </button>
+              <button className="a-btn danger" onClick={confirmDelete}>
+                Delete file
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Shell>
   );
 };

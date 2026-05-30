@@ -3,6 +3,10 @@ import { Shell } from '../../components/Shell';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { I } from '../../components/icons';
+import { useNav } from '../../nav/NavContext';
+import { useToast } from '../../toast/Toast';
+import { useJob } from '../../components/useJob';
+import { JobCard } from '../../components/JobCard';
 import { ROLES } from '../../data/roles';
 import type { RoleId, Theme } from '../../types';
 
@@ -18,8 +22,18 @@ export const DialectScreen = ({
 }) => {
   const r = ROLES[roleId] || ROLES.forensics;
   const name = firstName || r.name.split(' ')[0];
+  const nav = useNav();
+  const toast = useToast();
+  const job = useJob();
   const [lang, setLang] = useState('Hausa');
   const [task, setTask] = useState('Transcribe + translate');
+
+  const startJob = () => {
+    job.start('maiduguri-02.wav', () =>
+      toast('ok', 'Transcription complete', 'maiduguri-02.wav · ready to view'),
+    );
+    toast('info', 'Job queued', `maiduguri-02.wav · ${lang} · ${task}`);
+  };
 
   return (
     <Shell theme={theme}>
@@ -44,7 +58,10 @@ export const DialectScreen = ({
                 <div className="a-dz">
                   <div style={{ color: 'var(--fg-3)' }}>{I.upload}</div>
                   <div>
-                    <strong>Drop audio or video here</strong> or <span className="a-link">browse files</span>
+                    <strong>Drop audio or video here</strong> or{' '}
+                    <span className="a-link" role="button" onClick={startJob}>
+                      browse files
+                    </span>
                   </div>
                   <div className="a-dz__sub">
                     Up to 500 MB per file. Job runs asynchronously and you'll be notified on
@@ -52,6 +69,21 @@ export const DialectScreen = ({
                   </div>
                   <div className="a-dz__types mono">.WAV · .MP3 · .M4A · .OGG · .MP4 · .MOV · .WEBM</div>
                 </div>
+                <button
+                  className="a-btn primary"
+                  style={{ alignSelf: 'flex-start' }}
+                  onClick={startJob}
+                  disabled={job.status === 'queued' || job.status === 'processing'}
+                >
+                  {I.bolt}
+                  <span>Start transcription</span>
+                </button>
+                <JobCard
+                  job={job}
+                  meta={`${job.fileName ?? ''} · ${lang} · ${task}`}
+                  onView={() => nav?.navigate('/dialect/chat')}
+                  onReset={job.reset}
+                />
               </div>
 
               <div className="col" style={{ width: 260, gap: 14 }}>

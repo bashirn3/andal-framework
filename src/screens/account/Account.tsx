@@ -3,6 +3,8 @@ import { Shell } from '../../components/Shell';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { I } from '../../components/icons';
+import { useNav } from '../../nav/NavContext';
+import { useToast } from '../../toast/Toast';
 import { ROLES } from '../../data/roles';
 import type { ModuleId, RoleId, Theme } from '../../types';
 
@@ -29,6 +31,8 @@ export const AccountScreen = ({
   theme?: Theme;
   roleId?: RoleId;
 }) => {
+  const nav = useNav();
+  const toast = useToast();
   const r = ROLES[roleId] || ROLES.rd;
   const emailSlug = r.name
     .toLowerCase()
@@ -163,7 +167,13 @@ export const AccountScreen = ({
             </div>
 
             <div className="row" style={{ justifyContent: 'flex-end', gap: 8 }}>
-              <button className="a-btn">
+              <button
+                className="a-btn"
+                onClick={() => {
+                  toast('ok', 'Signed out', 'Your session has ended.');
+                  nav?.navigate('/login');
+                }}
+              >
                 {I.signout}
                 <span>Sign out</span>
               </button>
