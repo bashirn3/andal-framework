@@ -100,7 +100,7 @@ export const ActiveChatScreen = ({
             <ChatMessages messages={messages} userName="Adamu" userInitials="AB" assistantLabel="Andal Knowledge" />
           </div>
 
-          <div style={{ padding: '0 64px 18px' }}>
+          <div className="a-chat__dock">
             <Composer placeholder="Reply or attach more context…" onSend={send} />
             <TrustNote />
           </div>

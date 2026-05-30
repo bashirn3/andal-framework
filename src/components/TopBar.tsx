@@ -19,6 +19,14 @@ export const TopBar = ({
   const nav = useNav();
   return (
     <div className="a-topbar">
+      <button
+        className="a-btn ghost icon a-topbar__menu"
+        title="Open menu"
+        aria-label="Open navigation"
+        onClick={nav ? () => nav.setSidebarOpen(true) : undefined}
+      >
+        {I.menu}
+      </button>
       <div className="a-crumb">
         <span className="a-crumb__module mono">{module}</span>
         <span className="a-crumb__sep">/</span>

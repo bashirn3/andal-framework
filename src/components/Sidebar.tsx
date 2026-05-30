@@ -123,9 +123,13 @@ export const Sidebar = ({
   const pct = Math.round((storage.used / storage.total) * 100);
   const barClass = pct >= 95 ? 'danger' : pct >= 80 ? 'warn' : '';
 
+  const open = nav?.sidebarOpen ?? false;
+
   return (
-    <aside className="a-side">
-      <Lockup />
+    <>
+      {open && <div className="a-side__backdrop" onClick={() => nav?.setSidebarOpen(false)} />}
+      <aside className="a-side" data-open={open}>
+        <Lockup />
       <div className="a-side__scroll">
         <div className="col" style={{ gap: 4 }}>
           <div className="a-side__group-title">
@@ -270,6 +274,7 @@ export const Sidebar = ({
           </button>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };

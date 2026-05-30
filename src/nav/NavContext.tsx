@@ -17,6 +17,9 @@ export interface NavValue {
   modal: ModalId;
   openModal: (m: ModalId) => void;
   closeModal: () => void;
+  /** Mobile: whether the off-canvas sidebar drawer is open. */
+  sidebarOpen: boolean;
+  setSidebarOpen: (b: boolean) => void;
 }
 
 // Null when rendered outside a provider (e.g. static reference views).

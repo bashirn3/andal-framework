@@ -129,7 +129,7 @@ export const DialectScreen = ({
             <div className="col" style={{ gap: 8 }}>
               <div className="mono-meta">RECENT JOBS</div>
               <div className="a-card" style={{ overflow: 'hidden' }}>
-                <table className="a-table">
+                <div className="a-scroll-x"><table className="a-table">
                   <thead>
                     <tr>
                       <th>File</th>
@@ -214,7 +214,7 @@ export const DialectScreen = ({
                       </td>
                     </tr>
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </div>
           </div>

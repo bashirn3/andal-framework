@@ -233,7 +233,7 @@ export const FilesScreen = ({
                 </button>
               </div>
             ) : (
-              <table className="a-table" style={{ flex: 1 }}>
+              <div className="a-scroll-x"><table className="a-table" style={{ flex: 1 }}>
                 <thead>
                   <tr>
                     <th style={{ minWidth: 280 }}>File</th>
@@ -297,7 +297,7 @@ export const FilesScreen = ({
                     );
                   })}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         </div>

@@ -110,7 +110,7 @@ export const CodingScreen = ({
           <ChatMessages messages={messages} userName="Adamu" userInitials="AB" assistantLabel="Andal Coding" />
         </div>
 
-        <div style={{ padding: '0 64px 18px' }}>
+        <div className="a-chat__dock">
           <Composer
             placeholder="Ask Andal Coding…"
             attached={[{ name: 'normalize.py', size: '1.4 KB' }]}

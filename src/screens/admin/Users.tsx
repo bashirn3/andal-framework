@@ -95,7 +95,7 @@ export const AdminUsersScreen = ({ theme = 'light' }: { theme?: Theme }) => {
               </div>
             </div>
 
-            <table className="a-table">
+            <div className="a-scroll-x"><table className="a-table">
               <thead>
                 <tr>
                   <th>User</th>
@@ -177,7 +177,7 @@ export const AdminUsersScreen = ({ theme = 'light' }: { theme?: Theme }) => {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>

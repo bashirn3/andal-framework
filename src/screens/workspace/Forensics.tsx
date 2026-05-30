@@ -127,7 +127,7 @@ export const ForensicsScreen = ({
             <div className="col" style={{ gap: 8 }}>
               <div className="mono-meta">RECENT JOBS</div>
               <div className="a-card" style={{ overflow: 'hidden' }}>
-                <table className="a-table">
+                <div className="a-scroll-x"><table className="a-table">
                   <thead>
                     <tr>
                       <th>Evidence</th>
@@ -188,7 +188,7 @@ export const ForensicsScreen = ({
                       </td>
                     </tr>
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </div>
           </div>
@@ -313,7 +313,7 @@ export const ForensicsResultScreen = ({
             <div className="row" style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-soft)' }}>
               <div className="mono-meta">INDICATORS</div>
             </div>
-            <table className="a-table">
+            <div className="a-scroll-x"><table className="a-table">
               <thead>
                 <tr>
                   <th>Type</th>
@@ -336,7 +336,7 @@ export const ForensicsResultScreen = ({
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>

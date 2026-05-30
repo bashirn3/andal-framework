@@ -39,6 +39,7 @@ export const I: Record<string, ReactNode> = {
   folder: <Icon d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
   trash: <Icon d={['M4 7h16', 'M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2', 'M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13']} />,
   more: <Icon d={['M12 5h.01', 'M12 12h.01', 'M12 19h.01']} />,
+  menu: <Icon d={['M4 7h16', 'M4 12h16', 'M4 17h16']} />,
   check: <Icon d="M5 12l5 5L20 7" />,
   x: <Icon d={['M6 6l12 12', 'M18 6L6 18']} />,
   arrow: <Icon d={['M5 12h14', 'M13 5l7 7-7 7']} />,

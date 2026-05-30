@@ -5,7 +5,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 
 /* ===== Base reset (was inline in Andal Prototype.html) ===== */
-html, body { margin: 0; padding: 0; background: #f3f2ed; height: 100%; overflow: hidden; }
+html, body { margin: 0; padding: 0; background: #eceef1; height: 100%; overflow: hidden; }
 #root { width: 100vw; height: 100vh; }
 
 :root {
@@ -25,17 +25,17 @@ html, body { margin: 0; padding: 0; background: #f3f2ed; height: 100%; overflow:
 
 /* ===== Light theme ===== */
 .andal {
-  --bg: #fafaf7;
-  --bg-sub: #f3f2ed;
+  --bg: #f7f8fa;
+  --bg-sub: #eceef1;
   --bg-elev: #ffffff;
-  --bg-soft: #f7f6f1;
-  --fg: #14130f;
-  --fg-2: #4a4a44;
-  --fg-3: #74746c;
-  --fg-4: #a3a39a;
-  --border: #e5e3dc;
-  --border-strong: #d7d4cb;
-  --border-soft: #ecebe5;
+  --bg-soft: #f1f3f5;
+  --fg: #15171c;
+  --fg-2: #454951;
+  --fg-3: #6c717a;
+  --fg-4: #9aa0a9;
+  --border: #e1e4e9;
+  --border-strong: #d0d4db;
+  --border-soft: #ebedf1;
   --accent: var(--green-600);
   --accent-fg: #ffffff;
   --accent-soft: #e6f0eb;
@@ -968,3 +968,64 @@ html, body { margin: 0; padding: 0; background: #f3f2ed; height: 100%; overflow:
 }
 .andal :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 5px; }
 .andal .a-input:focus-visible, .andal .a-composer__ta:focus-visible { outline: none; }
+
+/* ===== Responsive helpers (base) ===== */
+.a-chat__dock { padding: 0 64px 18px; }
+.a-scroll-x { overflow: auto; flex: 1; min-height: 0; }
+.a-topbar__menu { display: none; }                 /* hamburger: hidden on desktop */
+.a-side__backdrop { display: none; }
+
+/* ===== Mobile: ≤ 860px — drawer sidebar + scrollable shell ===== */
+@media (max-width: 860px) {
+  /* The fixed full-height app shell becomes a scrollable document. */
+  .andal { height: auto; min-height: 100%; overflow: visible; }
+  .a-main { overflow: visible; min-height: 100vh; }
+  .a-home, .a-chat, .a-chat__scroll { overflow: visible; }
+  .a-chat__scroll { padding: 20px 16px; }
+  .a-chat__dock { padding: 0 16px 16px; }
+  .a-main .row { flex-wrap: wrap; }
+  .a-msg { max-width: 100%; }
+  .a-home { padding: 32px 18px 28px; }
+  .a-home__title { font-size: 30px; }
+  .a-ph { padding: 18px 18px 12px; flex-wrap: wrap; }
+  .a-suggest { grid-template-columns: 1fr; }
+  .a-scroll-x .a-table { min-width: 640px; }        /* let wide tables scroll sideways */
+
+  /* Sidebar → off-canvas drawer */
+  .a-side {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 40;
+    width: 286px; max-width: 86vw;
+    transform: translateX(-100%);
+    transition: transform .26s cubic-bezier(.22,.7,.3,1);
+    box-shadow: var(--shadow-lg);
+  }
+  .a-side[data-open="true"] { transform: none; }
+  .a-side__backdrop {
+    display: block; position: fixed; inset: 0; z-index: 39;
+    background: rgba(0,0,0,.45); -webkit-backdrop-filter: blur(1px); backdrop-filter: blur(1px);
+    animation: a-fade .18s ease both;
+  }
+  .a-topbar__menu { display: inline-flex; margin-left: -6px; }
+}
+
+/* ===== Mobile: ≤ 760px — stack auth & welcome ===== */
+@media (max-width: 760px) {
+  .a-auth { flex-direction: column; }
+  .a-auth__left { display: none; }                  /* form-first on phones */
+  .a-auth__right { width: 100%; padding: 28px 20px; }
+  .a-auth__form { max-width: 420px; }
+
+  .a-welcome__hd { padding: 16px 18px; flex-wrap: wrap; gap: 10px 12px; }
+  .a-welcome__body { padding: 28px 18px; gap: 22px; }
+  .a-welcome__greet h1 { font-size: 30px; }
+  .a-welcome__grid { grid-template-columns: 1fr; }
+  .a-welcome__ft { padding: 12px 18px; }
+}
+
+/* ===== Phone: ≤ 480px ===== */
+@media (max-width: 480px) {
+  .a-topbar { padding: 0 12px; }
+  .a-home__title { font-size: 26px; }
+  .a-ph__title { font-size: 19px; }
+  .a-ph__actions { width: 100%; }
+}

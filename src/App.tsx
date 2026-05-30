@@ -69,6 +69,7 @@ export default function App() {
   const [route, setRoute] = useState<Route>(() => window.location.hash.replace(/^#/, '') || '/login');
   const [expanded, setExpanded] = useState<Set<ModuleId>>(new Set(['knowledge']));
   const [modal, setModal] = useState<ModalId>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const r = ROLES[role];
 
@@ -140,6 +141,7 @@ export default function App() {
     }
     setRoute(to);
     setModal(null);
+    setSidebarOpen(false); // close the mobile drawer on navigation
   }, []);
 
   const toggleExpand = useCallback((id: ModuleId) => {
@@ -171,6 +173,8 @@ export default function App() {
     modal,
     openModal: setModal,
     closeModal: () => setModal(null),
+    sidebarOpen,
+    setSidebarOpen,
   };
 
   return (
