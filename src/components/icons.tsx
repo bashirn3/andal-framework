@@ -40,6 +40,7 @@ export const I: Record<string, ReactNode> = {
   trash: <Icon d={['M4 7h16', 'M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2', 'M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13']} />,
   more: <Icon d={['M12 5h.01', 'M12 12h.01', 'M12 19h.01']} />,
   menu: <Icon d={['M4 7h16', 'M4 12h16', 'M4 17h16']} />,
+  home: <Icon d={['M3 11l9-7 9 7', 'M5 9.5V20h14V9.5']} />,
   check: <Icon d="M5 12l5 5L20 7" />,
   x: <Icon d={['M6 6l12 12', 'M18 6L6 18']} />,
   arrow: <Icon d={['M5 12h14', 'M13 5l7 7-7 7']} />,

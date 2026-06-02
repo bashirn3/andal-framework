@@ -95,7 +95,7 @@ export const AdminUsersScreen = ({ theme = 'light' }: { theme?: Theme }) => {
               </div>
             </div>
 
-            <div className="a-scroll-x"><table className="a-table">
+            <div className="a-scroll-x"><table className="a-table a-table--cards">
               <thead>
                 <tr>
                   <th>User</th>
@@ -112,7 +112,7 @@ export const AdminUsersScreen = ({ theme = 'light' }: { theme?: Theme }) => {
               <tbody>
                 {USERS.map(([n, em, sid, dept, st, access, sto, la]) => (
                   <tr key={n} style={st === 'pending' ? { background: 'var(--warn-soft)' } : {}}>
-                    <td>
+                    <td data-label="User">
                       <div className="row" style={{ gap: 10 }}>
                         <div className="a-avatar mono" style={{ width: 26, height: 26, fontSize: 10 }}>
                           {n.split(' ').map((p) => p[0]).join('')}
@@ -120,14 +120,14 @@ export const AdminUsersScreen = ({ theme = 'light' }: { theme?: Theme }) => {
                         <span>{n}</span>
                       </div>
                     </td>
-                    <td className="mono" style={{ fontSize: 12, color: 'var(--fg-2)' }}>
+                    <td data-label="Email" className="mono" style={{ fontSize: 12, color: 'var(--fg-2)' }}>
                       {em}
                     </td>
-                    <td className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+                    <td data-label="Staff ID" className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
                       {sid}
                     </td>
-                    <td>{dept === '—' ? <span className="muted">Unassigned</span> : dept}</td>
-                    <td>
+                    <td data-label="Department">{dept === '—' ? <span className="muted">Unassigned</span> : dept}</td>
+                    <td data-label="Status">
                       {st === 'pending' && (
                         <span className="a-pill warn">
                           <span className="dot" />
@@ -147,16 +147,16 @@ export const AdminUsersScreen = ({ theme = 'light' }: { theme?: Theme }) => {
                         </span>
                       )}
                     </td>
-                    <td className="mono" style={{ fontSize: 11.5, color: 'var(--fg-2)' }}>
+                    <td data-label="Access" className="mono" style={{ fontSize: 11.5, color: 'var(--fg-2)' }}>
                       {access}
                     </td>
-                    <td className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+                    <td data-label="Storage" className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
                       {sto}
                     </td>
-                    <td className="mono" style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>
+                    <td data-label="Last active" className="mono" style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>
                       {la}
                     </td>
-                    <td>
+                    <td data-label="" className="a-cell-actions">
                       <div className="row" style={{ gap: 4, justifyContent: 'flex-end' }}>
                         {st === 'pending' ? (
                           <button className="a-btn primary sm" onClick={nav ? () => nav.openModal('approve-user') : undefined}>

@@ -233,7 +233,7 @@ export const FilesScreen = ({
                 </button>
               </div>
             ) : (
-              <div className="a-scroll-x"><table className="a-table" style={{ flex: 1 }}>
+              <div className="a-scroll-x"><table className="a-table a-table--cards" style={{ flex: 1 }}>
                 <thead>
                   <tr>
                     <th style={{ minWidth: 280 }}>File</th>
@@ -250,33 +250,33 @@ export const FilesScreen = ({
                     const [f, , m, t, sz, st, stat, time] = row;
                     return (
                       <tr key={f}>
-                        <td>
+                        <td data-label="File">
                           <div className="row" style={{ gap: 10 }}>
                             <span style={{ color: 'var(--fg-3)' }}>{I.file}</span>
                             <span style={{ color: 'var(--fg)' }}>{f}</span>
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Workspace">
                           <span className="mono" style={{ fontSize: 12, color: 'var(--fg-2)' }}>
                             {m}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Type">
                           <span className="a-pill mono">{t}</span>
                         </td>
-                        <td className="mono" style={{ fontSize: 12 }}>
+                        <td data-label="Size" className="mono" style={{ fontSize: 12 }}>
                           {sz}
                         </td>
-                        <td>
+                        <td data-label="Status">
                           <span className={`a-pill ${st} mono`}>
                             <span className="dot" />
                             {stat}
                           </span>
                         </td>
-                        <td className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
+                        <td data-label="Uploaded" className="mono" style={{ fontSize: 12, color: 'var(--fg-3)' }}>
                           {time}
                         </td>
-                        <td>
+                        <td data-label="" className="a-cell-actions">
                           <div className="row" style={{ gap: 4, justifyContent: 'flex-end' }}>
                             {stat === 'Result ready' && (
                               <button className="a-btn ghost sm" onClick={() => toast('info', 'Opening result', f)}>

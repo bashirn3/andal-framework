@@ -6,6 +6,7 @@ import { Stage } from './nav/Stage';
 import { Router } from './Router';
 import { TweaksPanel } from './tweaks/TweaksPanel';
 import { ToastProvider } from './toast/Toast';
+import { MobileTabBar } from './components/MobileTabBar';
 import { ApproveUserOverlay, ClearSessionOverlay, DisableUserOverlay } from './components/modals/Modals';
 import type { Accent, Density, ModuleId, RoleId, Theme } from './types';
 
@@ -195,6 +196,8 @@ export default function App() {
             )}
           </div>
         </Stage>
+
+        <MobileTabBar />
 
         <TweaksPanel
           role={role}

@@ -137,7 +137,7 @@ export const AuditLogScreen = ({ theme = 'light' }: { theme?: Theme }) => {
               </span>
             </div>
             <div className="a-scroll-x">
-              <table className="a-table">
+              <table className="a-table a-table--cards">
                 <thead>
                   <tr>
                     <th style={{ width: 170 }}>Timestamp</th>
@@ -158,17 +158,17 @@ export const AuditLogScreen = ({ theme = 'light' }: { theme?: Theme }) => {
                   ) : (
                     filtered.map(([t, actor, action, target, mod, meta], i) => (
                       <tr key={i}>
-                        <td className="mono" style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>{t}</td>
-                        <td>{actor === '—' ? <span className="mono muted">SYSTEM</span> : actor}</td>
-                        <td>
+                        <td data-label="Time" className="mono" style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>{t}</td>
+                        <td data-label="Actor">{actor === '—' ? <span className="mono muted">SYSTEM</span> : actor}</td>
+                        <td data-label="Action">
                           <span className={`a-pill ${colorFor(action)} mono`}>
                             <span className="dot" />
                             {action}
                           </span>
                         </td>
-                        <td className="mono" style={{ fontSize: 12 }}>{target}</td>
-                        <td className="mono" style={{ fontSize: 12, color: 'var(--fg-2)' }}>{mod}</td>
-                        <td className="mono" style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>{meta}</td>
+                        <td data-label="Target" className="mono" style={{ fontSize: 12 }}>{target}</td>
+                        <td data-label="Module" className="mono" style={{ fontSize: 12, color: 'var(--fg-2)' }}>{mod}</td>
+                        <td data-label="Details" className="mono" style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>{meta}</td>
                       </tr>
                     ))
                   )}

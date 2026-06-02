@@ -1029,3 +1029,97 @@ html, body { margin: 0; padding: 0; background: #eceef1; height: 100%; overflow:
   .a-ph__title { font-size: 19px; }
   .a-ph__actions { width: 100%; }
 }
+
+/* ===== TasteSkill mobile pass: bottom tab bar + touch ergonomics ===== */
+.a-tabbar { display: none; }
+.andal.a-shellchrome {
+  position: fixed; inset: auto 0 0 0; width: auto; height: auto;
+  display: block; overflow: visible; background: transparent; z-index: 35;
+}
+@media (max-width: 860px) {
+  /* Bottom tab bar — primary navigation in the thumb zone */
+  .a-tabbar {
+    display: flex; align-items: stretch; gap: 2px;
+    background: var(--bg-elev); border-top: 1px solid var(--border);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 14px rgba(0,0,0,.06);
+  }
+  .a-tabbar button {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; min-height: 52px; border-radius: 12px; color: var(--fg-3);
+  }
+  .a-tabbar button.active { color: var(--accent); background: var(--accent-soft); }
+  .a-tabbar__label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* Room for the bar + momentum scrolling */
+  .a-main { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+  .a-side, .a-main, .a-home, .a-chat__scroll { -webkit-overflow-scrolling: touch; }
+  .a-side { padding-top: env(safe-area-inset-top); }
+
+  /* Touch targets ≈ 44px */
+  .a-btn { min-height: 40px; }
+  .a-btn.sm { min-height: 36px; padding: 0 12px; }
+  .a-btn.icon { min-width: 40px; min-height: 40px; }
+  .a-nav-item, .a-mod__head, .a-mod__conv, .a-mod__new,
+  .a-usermenu__item, .a-suggest__item { min-height: 44px; }
+  .a-tabs button, .seg button { min-height: 38px; }
+
+  /* 16px text in inputs prevents iOS focus-zoom */
+  .a-input, .a-composer__ta, input, textarea { font-size: 16px; }
+  .a-composer { padding: 12px 12px 10px; }
+  .a-composer .a-btn.primary.sm { width: 40px !important; height: 40px; min-height: 40px; }
+}
+
+/* ===== Mobile layout pass: breathing room + de-densify (≤760px) ===== */
+@media (max-width: 760px) {
+  /* Give pages real margins and vertical rhythm instead of cramped reflow */
+  .a-home { padding: 28px 20px 32px; }
+  .a-home__inner { gap: 22px; }
+  .a-ph { padding: 20px 20px 14px; gap: 12px; }
+  .a-main > div[style*="padding"] { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Stat-card rows and split panels stack to ONE column with comfortable gaps */
+  .a-main .row { flex-wrap: wrap; gap: 12px; }
+  .a-main .row > .a-statcard,
+  .a-main .row > .a-card { flex: 1 1 100% !important; min-width: 0; }
+  /* Dialect/Forensics two-column result panels stack */
+  .a-main .row[style*="stretch"] > .a-card { flex: 1 1 100% !important; }
+  /* Upload home: dropzone + options selector stack */
+  .a-main .row[style*="flex-start"] > .col { flex: 1 1 100% !important; width: 100% !important; }
+
+  /* Tables → stacked cards (no more horizontal scroll / busy grid) */
+  .a-table--cards { min-width: 0 !important; }
+  .a-scroll-x:has(.a-table--cards) { overflow: visible; }
+  .a-table--cards thead { display: none; }
+  .a-table--cards, .a-table--cards tbody { display: block; }
+  .a-table--cards tr {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-elev);
+    padding: 6px 14px;
+    margin: 0 0 10px;
+  }
+  .a-table--cards tbody tr:hover td { background: transparent; }
+  .a-table--cards td {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    border: 0 !important;
+    padding: 7px 0 !important;
+    text-align: right;
+  }
+  .a-table--cards td + td { border-top: 1px solid var(--border-soft) !important; }
+  .a-table--cards td::before {
+    content: attr(data-label);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--fg-3);
+    text-align: left; flex: 0 0 auto;
+  }
+  /* Cells with no label (actions) go full width, left-aligned */
+  .a-table--cards td[data-label=""]::before { display: none; }
+  .a-table--cards td.a-cell-actions { justify-content: flex-start; padding-top: 10px !important; }
+  .a-table--cards td.a-cell-actions .row { width: 100%; justify-content: stretch !important; }
+  .a-table--cards td.a-cell-actions .a-btn { flex: 1; }
+
+  /* The little card-table toolbars (filter tabs + count) wrap cleanly */
+  .a-card > .row { flex-wrap: wrap; }
+}
